@@ -1,66 +1,69 @@
+'use client'
+import { useState } from "react";
 import Image from "next/image";
-import styles from "./page.module.css";
+import estilos from "./page.module.css";
+import Banner from '../../public/banner.png';
+import Categorias from "./Componentes/Categorias/Categorias";
+import CampoDeBusca from "./Componentes/CampoDeBusca/CampoDeBusca";
+import Cards from "./Componentes/Cards/Cards.jsx";
+import { ListaTotalPratos } from "./servicos/servicos.js";
+import { ListaFiltrada } from "./servicos/servicos.js"
 
 export default function Home() {
+
+  const [listaPratos, setListaPratos] = useState(ListaTotalPratos())
+  const [pesquisaTexto, setPesquisaTexto] = useState("");
+  const [escolheCategoria, setEscolheCategoria] = useState("")
+
+  const buscaTexto = (textoDigitado) => {
+    setPesquisaTexto(textoDigitado);
+    setEscolheCategoria("")
+
+    if (textoDigitado.length > 3) {
+      setListaPratos(ListaFiltrada(textoDigitado))
+    } else if (textoDigitado.length === 0) {
+      setListaPratos(ListaTotalPratos())
+    }
+  }
+
+  const limpaTexto = () => {
+    setPesquisaTexto("")
+  }
+
+
+  const botaoFiltro = (categoria) => {
+    limpaTexto()
+    setEscolheCategoria(categoria)
+
+    if (categoria === "") {
+      setListaPratos(ListaTotalPratos())
+    } else {
+      const ListaFiltradaPorBotao = ListaTotalPratos().filter((prato) => prato.categoria.toLowerCase() === categoria.toLowerCase())
+      setListaPratos(ListaFiltradaPorBotao);
+    }
+
+  }
+
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className={estilos.home}>
+      <header className={estilos.banner}>
+        <Image src={Banner} className={estilos.img_banner} alt="banner" />
+        <div className={estilos.cabecalho}>
+          <h1>RESTAURANT</h1>
+          <p>De pratos clássicos a criações surpreendentes nesse cardápio é um requinte de sabores refinados</p>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </header>
+      <Categorias mudarCategoria={botaoFiltro} categoriaAtiva={escolheCategoria} />
+      <CampoDeBusca value={pesquisaTexto} onChange={(event) => buscaTexto(event.target.value)} />
+      <main>
+        <h2>Cardápio</h2>
+        <div className={estilos.container_produtos}>
+          {listaPratos.map((produto, index) => (
+            <Cards key={index} imagem={produto.imagem} nome={produto.nome} categoria={produto.categoria} descricao={produto.descricao} preco ={produto.preco}/>
+          ))}
         </div>
       </main>
-    </div>
+    </div >
   );
 }
